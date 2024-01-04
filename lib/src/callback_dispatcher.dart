@@ -17,9 +17,13 @@ void callbackDispatcher() {
 
   _backgroundChannel.setMethodCallHandler((MethodCall call) async {
     final List<dynamic> args = call.arguments;
-    final Function callback = PluginUtilities.getCallbackFromHandle(
+    var callbackFromHandle = PluginUtilities.getCallbackFromHandle(
         CallbackHandle.fromRawHandle(args[0]));
-    assert(callback != null);
+    if (callbackFromHandle == null) {
+      throw Exception('Unable to get callback from handle');
+    }
+    final Function callback = callbackFromHandle;
+    // assert(callback != null);
     final List<String> triggeringGeofences = args[1].cast<String>();
     final List<double> locationList = <double>[];
     // 0.0 becomes 0 somewhere during the method call, resulting in wrong

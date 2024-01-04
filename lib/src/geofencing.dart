@@ -73,7 +73,7 @@ class GeofenceRegion {
 
   GeofenceRegion(
       this.id, double latitude, double longitude, this.radius, this.triggers,
-      {AndroidGeofencingSettings androidSettings})
+      {AndroidGeofencingSettings? androidSettings})
       : location = Location(latitude, longitude),
         androidSettings = (androidSettings ?? AndroidGeofencingSettings());
 
@@ -102,8 +102,11 @@ class GeofencingManager {
 
   /// Initialize the plugin and request relevant permissions from the user.
   static Future<void> initialize() async {
-    final CallbackHandle callback =
-        PluginUtilities.getCallbackHandle(callbackDispatcher);
+    var callbackHandle = PluginUtilities.getCallbackHandle(callbackDispatcher);
+    if (callbackHandle == null) {
+      throw Exception('Fatal: could not initialize callback dispatcher');
+    }
+    final CallbackHandle callback = callbackHandle;
     await _channel.invokeMethod('GeofencingPlugin.initializeService',
         <dynamic>[callback.toRawHandle()]);
   }
@@ -141,9 +144,11 @@ class GeofencingManager {
         (region.triggers.length == 1)) {
       throw UnsupportedError("iOS does not support 'GeofenceEvent.dwell'");
     }
-    final List<dynamic> args = <dynamic>[
-      PluginUtilities.getCallbackHandle(callback).toRawHandle()
-    ];
+    var callbackHandle = PluginUtilities.getCallbackHandle(callback);
+    if (callbackHandle == null) {
+      throw Exception('Fatal: could not initialize callback handle');
+    }
+    final List<dynamic> args = <dynamic>[callbackHandle.toRawHandle()];
     args.addAll(region._toArgs());
     await _channel.invokeMethod('GeofencingPlugin.registerGeofence', args);
   }
