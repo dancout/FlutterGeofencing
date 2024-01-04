@@ -9,8 +9,15 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'package:geofencing/geofencing.dart';
+import 'package:geofencing_example/local_notification_helper.dart';
 
-void main() => runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await LocalNotificationHelper.instance.initialize();
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -20,8 +27,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String geofenceState = 'N/A';
   List<String> registeredGeofences = [];
-  double? latitude = 37.419851;
-  double? longitude = -122.078818;
+  double? latitude = 37.421946;
+  double? longitude = -122.084139;
+
   double? radius = 150.0;
   ReceivePort port = ReceivePort();
   final List<GeofenceEvent> triggers = <GeofenceEvent>[
@@ -41,6 +49,12 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
+    LocalNotificationHelper.instance.showNotification(
+      title: 'test!',
+      body: 'test body',
+    );
+
     IsolateNameServer.registerPortWithName(
         port.sendPort, 'geofencing_send_port');
     port.listen((dynamic data) {
@@ -53,6 +67,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   static void callback(List<String> ids, Location l, GeofenceEvent e) async {
+    LocalNotificationHelper.instance.showNotification(
+      title: e.toString(),
+      // body: 'test body',
+    );
     print('Fences: $ids Location $l Event: $e');
     var lookupPortByName =
         IsolateNameServer.lookupPortByName('geofencing_send_port');
@@ -61,6 +79,8 @@ class _MyAppState extends State<MyApp> {
     }
     final SendPort send = lookupPortByName;
     send.send(e.toString());
+
+    print('The GeofenceEvent:-------------  ${e.toString()}');
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
