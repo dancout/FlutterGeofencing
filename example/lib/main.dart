@@ -35,7 +35,8 @@ class _MyAppState extends State<MyApp> {
         GeofenceEvent.exit,
         GeofenceEvent.dwell
       ],
-      loiteringDelay: 1000 * 60);
+      // loiteringDelay: 1000 * 60);
+      loiteringDelay: 0);
 
   @override
   void initState() {
